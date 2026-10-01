@@ -1,0 +1,545 @@
+﻿@page
+
+@{
+    // Título de la página
+    ViewData["Title"] = "Calculadora IMC";
+}
+
+<style>
+
+    /* Configuración general de la página */
+    body {
+        background-color: #eaf6ff;
+        font-family: Arial;
+        margin: 0;
+        padding: 20px;
+    }
+
+    /* Diseño de la calculadora */
+    .calculadora {
+        width: 400px;
+        max-width: 100%;
+        margin: 30px auto;
+        padding: 25px;
+        background-color: white;
+        border: 2px solid #2583bd;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px #b8d8eb;
+        text-align: center;
+        box-sizing: border-box;
+    }
+
+    /* Diseño de los títulos */
+    h1 {
+        color: #2583bd;
+        font-size: 26px;
+    }
+
+    /* Diseño de los párrafos */
+    p {
+        color: #555;
+    }
+
+    /* Diseño de los campos para ingresar datos */
+    input {
+        width: 100%;
+        padding: 12px;
+        margin: 8px 0;
+        border: 1px solid #b8d8eb;
+        border-radius: 6px;
+        box-sizing: border-box;
+    }
+
+    /* Diseño general de los botones */
+    button {
+        background-color: #2583bd;
+        color: white;
+        border: none;
+        padding: 11px 15px;
+        border-radius: 6px;
+        cursor: pointer;
+        margin: 5px 2px;
+        font-size: 14px;
+    }
+
+        /* Cambia el color del botón cuando pasamos el mouse */
+        button:hover {
+            background-color: #176995;
+        }
+
+    /* Diseño del resultado del IMC */
+    #resultado {
+        margin-top: 20px;
+        color: #2583bd;
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    /* Tamaño y posición de la tabla */
+    .tabla {
+        width: 800px;
+        max-width: 100%;
+        margin: 30px auto;
+        text-align: center;
+    }
+
+        /* Tamaño del título de la tabla */
+        .tabla h1 {
+            font-size: 25px;
+        }
+
+    /* Diseño general de la tabla */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background-color: white;
+        font-size: 14px;
+    }
+
+    /* Diseño de los encabezados de la tabla */
+    th {
+        background-color: #263b4d;
+        color: white;
+        padding: 12px 8px;
+    }
+
+    /* Diseño de las celdas de la tabla */
+    td {
+        padding: 10px 8px;
+        border: 1px solid #ddd;
+    }
+
+    /* Color para bajo peso */
+    .bajo {
+        color: #e69500;
+        font-weight: bold;
+    }
+
+    /* Color para peso normal */
+    .normal {
+        color: green;
+        font-weight: bold;
+    }
+
+    /* Color para sobrepeso */
+    .sobrepeso {
+        color: red;
+        font-weight: bold;
+    }
+
+    /* Color para obesidad */
+    .obesidad {
+        color: #a00000;
+        font-weight: bold;
+    }
+
+    /* Diseño del botón para eliminar una consulta */
+    .botonEliminar {
+        background-color: #d9534f;
+        color: white;
+        padding: 7px 10px;
+        border-radius: 5px;
+        font-size: 12px;
+        margin: 0;
+    }
+
+        /* Color del botón eliminar cuando pasamos el mouse */
+        .botonEliminar:hover {
+            background-color: #b52b27;
+        }
+
+    /* Adaptación para pantallas pequeñas */
+    @@media (max-width: 600px) {
+        /* Reduce el espacio de la página */
+        body {
+            padding: 10px;
+        }
+        /* Ajusta la calculadora */
+        .calculadora {
+            margin: 20px auto;
+            padding: 20px;
+        }
+        /* Permite desplazarse horizontalmente en la tabla */
+        .tabla {
+            overflow-x: auto;
+        }
+        /* Tamaño mínimo de la tabla */
+        table {
+            min-width: 650px;
+        }
+        /* Ajusta los botones en pantallas pequeñas */
+        button {
+            padding: 10px;
+            font-size: 13px;
+        }
+    }
+
+</style>
+
+
+<!-- Contenedor principal de la calculadora -->
+<div class="calculadora" id="calculadora">
+
+    <!-- Título principal -->
+    <h1>Perfil de Salud</h1>
+
+    <!-- Descripción de la calculadora -->
+    <p>Calculadora de Índice de Masa Corporal</p>
+
+    <!-- Campo para ingresar el nombre -->
+    <input type="text" id="nombre"
+           placeholder="Tu Nombre" />
+
+    <!-- Campo para ingresar el peso -->
+    <input type="number" id="peso"
+           placeholder="Peso en KG (ej. 70)" />
+
+    <!-- Campo para ingresar la estatura -->
+    <input type="number" id="estatura"
+           placeholder="Estatura en Metros (ej. 1.75)"
+           step="0.01" />
+
+    <br />
+
+    <!-- Botón que realiza el cálculo -->
+    <button onclick="calcularIMC()">
+        Calcular IMC
+    </button>
+
+    <!-- Botón que limpia solamente los datos -->
+    <button onclick="limpiarDatos()">
+        Limpiar Datos
+    </button>
+
+    <!-- Botón que elimina todas las consultas de la tabla -->
+    <button onclick="limpiarTabla()">
+        Limpiar Tabla
+    </button>
+
+    <!-- Aquí se mostrará el resultado del cálculo -->
+    <div id="resultado"></div>
+
+</div>
+
+
+<!-- Sección donde se encuentra la tabla -->
+<div class="tabla">
+
+    <!-- Título de la tabla -->
+    <h1>Últimas Consultas (Máx 10)</h1>
+
+    <!-- Tabla de consultas -->
+    <table>
+
+        <!-- Encabezado de la tabla -->
+        <thead>
+
+            <tr>
+
+                <th>Nombre</th>
+
+                <th>Estatura (m)</th>
+
+                <th>Peso (kg)</th>
+
+                <th>Resultado IMC</th>
+
+                <th>Eliminar</th>
+
+            </tr>
+
+        </thead>
+
+        <!-- Aquí JavaScript agregará las consultas -->
+        <tbody id="tablaConsultas">
+        </tbody>
+
+    </table>
+
+</div>
+
+
+<script>
+
+    // Arreglo donde se almacenan las consultas
+    let consultas = [];
+
+
+    // Función principal para calcular el IMC
+    function calcularIMC() {
+
+        // Obtiene el nombre escrito por el usuario
+        let nombre = document.getElementById("nombre").value;
+
+        // Obtiene el peso y lo convierte a número decimal
+        let peso = parseFloat(
+            document.getElementById("peso").value
+        );
+
+        // Obtiene la estatura y la convierte a número decimal
+        let estatura = parseFloat(
+            document.getElementById("estatura").value
+        );
+
+
+        // Obtiene el espacio donde se mostrará el resultado
+        let resultado = document.getElementById("resultado");
+
+        // Obtiene el contenedor de la calculadora
+        let calculadora = document.getElementById("calculadora");
+
+
+        // Verifica que los datos ingresados sean correctos
+        if (nombre == "" || isNaN(peso) || isNaN(estatura) ||
+            peso <= 0 || estatura <= 0) {
+
+            // Muestra un mensaje de error
+            resultado.innerHTML =
+                "Por favor, ingresa los datos correctos.";
+
+            // Detiene la función
+            return;
+        }
+
+
+        // Fórmula para calcular el IMC
+        // IMC = peso / estatura al cuadrado
+        let imc = peso / (estatura * estatura);
+
+
+        // Variables para guardar la clasificación y el color
+        let clasificacion = "";
+        let clase = "";
+
+
+        // Si el IMC es menor a 18.5
+        if (imc < 18.5) {
+
+            // Clasificación de bajo peso
+            clasificacion = "Bajo peso";
+
+            // Clase CSS para el color naranja
+            clase = "bajo";
+
+
+        // Si el IMC es menor a 25
+        } else if (imc < 25) {
+
+            // Clasificación de peso normal
+            clasificacion = "Peso normal";
+
+            // Clase CSS para el color verde
+            clase = "normal";
+
+
+        // Si el IMC es menor a 30
+        } else if (imc < 30) {
+
+            // Clasificación de sobrepeso
+            clasificacion = "Sobrepeso";
+
+            // Clase CSS para el color rojo
+            clase = "sobrepeso";
+
+
+        // Si no cumple ninguna condición anterior
+        } else {
+
+            // Clasificación de obesidad
+            clasificacion = "Obesidad";
+
+            // Clase CSS para el color rojo oscuro
+            clase = "obesidad";
+
+        }
+
+
+        // Cambia el color del borde de la calculadora
+        // dependiendo de la clasificación
+        calculadora.style.borderColor =
+
+            clase == "normal" ? "green" :
+
+            clase == "bajo" ? "orange" :
+
+            clase == "sobrepeso" ? "red" :
+
+            "#a00000";
+
+
+        // Aplica la clase correspondiente al resultado
+        resultado.className = clase;
+
+
+        // Muestra el resultado en la pantalla
+        // toFixed(2) muestra solamente dos decimales
+        resultado.innerHTML =
+
+            "Hola " + nombre +
+
+            "<br>Tu IMC es: " +
+            imc.toFixed(2) +
+
+            "<br>Clasificación: " +
+            clasificacion;
+
+
+        // Agrega la nueva consulta al arreglo
+        consultas.unshift({
+
+            // Guarda el nombre
+            nombre: nombre,
+
+            // Guarda la estatura
+            estatura: estatura,
+
+            // Guarda el peso
+            peso: peso,
+
+            // Guarda el IMC
+            imc: imc.toFixed(2),
+
+            // Guarda la clasificación
+            clasificacion: clasificacion,
+
+            // Guarda la clase para el color
+            clase: clase
+
+        });
+
+
+        // Verifica si hay más de 10 consultas
+        if (consultas.length > 10) {
+
+            // Elimina la consulta más antigua
+            consultas.pop();
+
+        }
+
+
+        // Actualiza la tabla
+        mostrarTabla();
+
+    }
+
+
+    // Función que muestra las consultas en la tabla
+    function mostrarTabla() {
+
+        // Obtiene el cuerpo de la tabla
+        let tabla =
+            document.getElementById("tablaConsultas");
+
+
+        // Limpia la tabla antes de volver a mostrarla
+        tabla.innerHTML = "";
+
+
+        // Recorre todas las consultas guardadas
+        consultas.forEach(function (consulta, indice) {
+
+
+            // Crea una nueva fila de la tabla
+            let fila = document.createElement("tr");
+
+
+            // Agrega los datos dentro de la fila
+            fila.innerHTML =
+
+                // Nombre
+                "<td>" +
+                consulta.nombre +
+                "</td>" +
+
+                // Estatura
+                "<td>" +
+                consulta.estatura +
+                "</td>" +
+
+                // Peso
+                "<td>" +
+                consulta.peso +
+                "</td>" +
+
+                // IMC y clasificación
+                // También aplica el color correspondiente
+                "<td class='" +
+                consulta.clase +
+                "'>" +
+
+                consulta.imc +
+                " - " +
+                consulta.clasificacion +
+
+                "</td>" +
+
+                // Botón para eliminar solamente esta consulta
+                "<td>" +
+
+                "<button class='botonEliminar' " +
+
+                "onclick='eliminarConsulta(" +
+                indice +
+                ")'>" +
+
+                "Eliminar" +
+
+                "</button>" +
+
+                "</td>";
+
+
+            // Agrega la fila creada a la tabla
+            tabla.appendChild(fila);
+
+        });
+
+    }
+
+
+    // Función para eliminar una consulta específica
+    function eliminarConsulta(indice) {
+
+        // Elimina una consulta usando su posición
+        consultas.splice(indice, 1);
+
+        // Actualiza nuevamente la tabla
+        mostrarTabla();
+
+    }
+
+
+    // Función para limpiar los campos de información
+    function limpiarDatos() {
+
+        // Limpia el nombre
+        document.getElementById("nombre").value = "";
+
+        // Limpia el peso
+        document.getElementById("peso").value = "";
+
+        // Limpia la estatura
+        document.getElementById("estatura").value = "";
+
+        // Limpia el resultado
+        document.getElementById("resultado").innerHTML = "";
+
+        // Regresa el borde a su color azul original
+        document.getElementById("calculadora").style.borderColor =
+            "#2583bd";
+
+    }
+
+
+    // Función para limpiar toda la tabla
+    function limpiarTabla() {
+
+        // Vacía el arreglo de consultas
+        consultas = [];
+
+        // Borra todas las filas de la tabla
+        document.getElementById("tablaConsultas").innerHTML = "";
+
+    }
+
+</script>
